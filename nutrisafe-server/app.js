@@ -3,13 +3,18 @@ require('dotenv').config();
 const bodyParser   = require('body-parser');
 const cookieParser = require('cookie-parser');
 const express      = require('express');
+const session      = require('express-session');
 const favicon      = require('serve-favicon');
 const hbs          = require('hbs');
 const mongoose     = require('mongoose');
 const logger       = require('morgan');
 const path         = require('path');
+const cors         = require('cors');
+const passport     = require('passport');
+const MongoStore = require('connect-mongo')(session);
 
-
+mongoose.Promise = Promise;
+require('./config/passport');
 mongoose
   .connect('mongodb://localhost/nutrisafe-server', {useNewUrlParser: true})
   .then(x => {
@@ -21,8 +26,8 @@ mongoose
 
 const app_name = require('./package.json').name;
 const debug = require('debug')(`${app_name}:${path.basename(__filename).split('.')[0]}`);
-
 const app = express();
+
 
 // Middleware Setup
 app.use(logger('dev'));
@@ -50,9 +55,39 @@ app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
 app.locals.title = 'Express - Generated with IronGenerator';
 
 
+app.use(session({
+  secret: "basic-auth-secret",
+  cookie: { maxAge: 600000 },
+  resave: true,
+  saveUninitialized: true,
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection,
+    ttl: 24 * 60 * 60 
+  })
+}));
 
-const index = require('./routes/index');
-app.use('/', index);
+app.use(passport.initialize());
+app.use(passport.session());
 
+app.use((req, res, next) => {
+  // Passport defines "req.user" if the user is logged in
+  // ("req.user" is the result of deserialize)
+    res.locals.currentUser = req.user;
+
+    // call "next()" to tell Express that we've finished
+    // (otherwise your browser will hang)
+    next();
+});
+
+app.use(cors({
+  credentials: true,
+  origin: ['http://localhost:3000']
+}));
+
+const index = require('./routes/api');
+app.use('/api', index);
+
+const userRoutes = require('./routes/api/user-routes');
+app.use('/api', userRoutes);
 
 module.exports = app;
