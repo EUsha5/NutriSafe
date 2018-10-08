@@ -4,8 +4,9 @@ const User     = require("./User");
 const Recipe   = require("./Recipe");
 
 const recipebookSchema = new Schema ({
+  title: String,
   author: {type: Schema.Types.ObjectId},
-  recipes: [{type: Schema.Types.ObjectId, ref: Recipe}],
+  recipes: [{type: Schema.Types.ObjectId}],
 },
 {timestamps: true}
 );

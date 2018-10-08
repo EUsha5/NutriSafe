@@ -1,10 +1,10 @@
 const express        = require('express');
-const userRoutes     = express.Router();
+const router     = express.Router();
 const passport       = require('passport');
 const bcrypt         = require('bcryptjs');
 const User           = require('../../models/User');
 
-userRoutes.post('/signup', (req, res, next) => {
+router.post('/signup', (req, res, next) => {
   if(!req.body.username || !req.body.password){
     res.status(400).json({message: 'Identify yourself, with a Username and Password'});
     return;
@@ -34,7 +34,8 @@ User.findOne({
         email:     req.body.email,
     });
     console.log('-------Creating User-------', aNewUser);    
-    return aNewUser.save();
+    User.create(aNewUser);
+    return;
   })
   .then((userResponseFromDb) => {
     console.log('==========Response=======', userResponseFromDb);
@@ -49,45 +50,69 @@ User.findOne({
 });
 
 
-userRoutes.post('/login', (req, res, next) => {
-  User.findOne({username: req.body.username})
-  .then((userFromDb) => {
-    console.log('++++++++++User++++++++', userFromDb);
-    if(userFromDb === null){
-      res.json({message: 'That is not your name. Try again!'});
-      return;
-    }
-    const isPasswordGood =
-      bcrypt.compareSync(req.body.password, userFromDb.password);
-    
-      if(isPasswordGood === false){
-        res.json({message: 'That is not your password. Try Again!'});
+router.post('/login', (req, res, next) => {
+  passport.authenticate('local', (err, theUser, failureDetails) => {
+    if (err) {
+        res.status(500).json({ message: 'Something went wrong authenticating user' });
         return;
-      }
-      req.login(userFromDb, (err) => {
-        if(err) {
-          next(err);
-        }
-        else {
-          console.log("user" + userFromDb);
-          userFromDb.set({loggedIn: true});
-          userFromDb.save()
-          .then(() => {
-            res.json({message: "Successfully Logged In!"});
-          })
-          .catch((err) => {
-            next(err);
-          });
-
     }
-      });
-  })
-  .catch((err) => {
-    next(err);
-  });
+
+    if (!theUser) {
+        // "failureDetails" contains the error messages
+        // from our logic in "LocalStrategy" { message: '...' }.
+        res.status(401).json(failureDetails);
+        return;
+    }
+
+    // save user in session
+    req.login(theUser, (err) => {
+        if (err) {
+            res.status(500).json({ message: 'Session save went bad.' });
+            return;
+        }
+
+        // We are now logged in (that's why we can also send req.user)
+        res.status(200).json(theUser);
+    });
+})(req, res, next);
+  // User.findOne({username: req.body.username})
+  // .then((userFromDb) => {
+  //   console.log('++++++++++User++++++++', userFromDb);
+  //   if(userFromDb === null){
+  //     res.json({message: 'That is not your name. Try again!'});
+  //     return;
+  //   }
+  //   const isPasswordGood =
+  //     bcrypt.compareSync(req.body.password, userFromDb.password);
+    
+  //     if(isPasswordGood === false){
+  //       res.json({message: 'That is not your password. Try Again!'});
+  //       return;
+  //     }
+  //     req.login(userFromDb, (err) => {
+  //       if(err) {
+  //         next(err);
+  //       }
+  //       else {
+  //         console.log("user" + userFromDb);
+  //         userFromDb.set({loggedIn: true});
+  //         userFromDb.save()
+  //         .then(() => {
+  //           res.json(req.user);
+  //         })
+  //         .catch((err) => {
+  //           next(err);
+  //         });
+
+  //   }
+  //     });
+  // })
+  // .catch((err) => {
+  //   next(err);
+  // });
 });
 
-userRoutes.post('/logout', (req, res, next) => {
+router.post('/logout', (req, res, next) => {
   console.log("this is the user before the log out ============= ", req.user);
   if(req.user === undefined) {
     return;
@@ -96,11 +121,14 @@ userRoutes.post('/logout', (req, res, next) => {
   req.user.save()
   .then(() => {
     req.logout();
+    req.session.destroy();
+    console.log("the user info after the log out {}{}}{}{}{{{}{}}{}{}}{{}{}{{}{}} ", req.user);
   })
     res.status(200).json({message: 'Logged out successfully!'});
 });
 
-userRoutes.get('/loggedin', (req, res, next) => {
+router.get('/loggedin', (req, res, next) => {
+  console.log("the user info when checking if logged in !!!!!!!!!!!!!!!!!!!!!!!!", req.user);
   if(req.isAuthenticated()){
     res.status(200).json(req.user);
     return;
@@ -108,4 +136,4 @@ userRoutes.get('/loggedin', (req, res, next) => {
   res.status(403).json({message: 'Unauthorized!'})
 })
 
-module.exports = userRoutes;
+module.exports = router;

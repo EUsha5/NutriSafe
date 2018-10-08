@@ -30,3 +30,15 @@
     transform: rotate(360deg);
   }
 }
+
+.navbar-logout{
+  display: flex;
+}
+
+.navbar-login{
+  display: flex;
+}
+
+ul {
+  list-style-type: none;
+}

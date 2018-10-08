@@ -5,11 +5,12 @@ const User     = require("./User");
 
 const recipeSchema = new Schema ({
   recipeName: String,
-  ingrediants: Array,
+  ingrediants: [],
   instructions: String,
   image: String,
   preptime: Number,
   author: {type: Schema.Types.ObjectId},
+  // style: {type: String, enum: 'saved, created'}
 },
 {timestamp: true}
 );

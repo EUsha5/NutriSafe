@@ -90,4 +90,11 @@ app.use('/api', index);
 const userRoutes = require('./routes/api/user-routes');
 app.use('/api', userRoutes);
 
+const recipeRoutes = require('./routes/api/recipe-routes');
+app.use('/api', recipeRoutes);
+
+const recipebookRoutes = require('./routes/api/profile-routes');
+app.use('/api', recipebookRoutes);
+
+
 module.exports = app;
