@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
 import AuthService from './user/authService';
-
+import SearchBar from './Searchbar';
 
 class Navbar extends Component {
   constructor(props){
@@ -33,9 +33,13 @@ class Navbar extends Component {
       return(
 
         <nav className="navbar-logout">
+          <SearchBar searchBoxName={"userNameSearch"} onSearchTermChange={this.onSearch} />
           <ul>
             <li>Welcome, {this.state.loggedInUser.firstName}</li>
             <li><Link to='/profile'>Profile</Link></li>
+            <li><Link to='/profile/book/:id'>RecipeBook</Link></li>
+            <li><Link to='/recipes/:id'>Recipe</Link></li>
+            <li><Link to='/recipes/create/:id'>CreateRecipe</Link></li>
             <li>
               {/* <Link to='/'> */}
                 <button onClick={() => this.logoutUser()}>Logout</button>
@@ -47,14 +51,18 @@ class Navbar extends Component {
       )
     } else {
       return ( 
-        <div>
         <nav className="navbar-login">
+        <SearchBar />
           <ul>
-            <li><Link to='/login'>Login</Link></li>
+            <li><Link to='/'>Login</Link></li>
             <li><Link to='/signup'>Signup</Link></li>
+            <li><Link to='/profile'>Profile</Link></li>
+            <li><Link to='/profile/book/:id'>RecipeBook</Link></li>
+            <li><Link to='/recipes/:id'>Recipe</Link></li>
+            <li><Link to='/recipes/create/:id'>CreateRecipe</Link></li>
+
           </ul>
         </nav>
-        </div>
       )
     }
   }

@@ -1,40 +1,52 @@
 const express = require('express');
-const Recipes  = require('../../models/Recipe');
+const Recipe  = require('../../models/Recipe');
 const router = express.Router();
 const mongoose = require('mongoose');
+const RecipeBook = require('../../models/RecipeBook');
 
 
-
-router.post('/recipes/create', (req, res, next) => {
-    Recipes.create({
-      name : req.body.name,
-      image : req.body.image,
-      preptime : req.body.preptime,
-      ingredients : req.body.ingredients,
+router.post('/recipes/create/:id', (req, res, next) => {
+    Recipe.create({
+      recipeName: req.body.recipeName,
+      preptime: req.body.preptime,
+      ingredients: req.body.ingredients,
       instructions: req.body.instructions,
-      author: req.user._id,
+      image: req.body.image,
     })
+    // console.log('=========================', req.body)
     .then (response => {
-      console.log('???????????????', response);
-      res.json(response);
+      console.log('???????Response????????1111111`', response);
+      console.log('???????req.params????????22222222', req.params.id);
+      RecipeBook.findByIdAndUpdate(req.params.id, {$push: {recipes: response._id}})
+      .then(response => {
+        console.log('???????req.params????????22222222', response);
+
+        
+        res.json(response)
+      })
+    .catch(err => {
+      res.json(err)
+    })
+     
+     
       console.log(response);
     })
     .catch(err => {
       res.json(err);
     })
-});
+  });
 
 
 // GET route => to get all the recipes
-router.get('/recipes', (req, res, next) => {
-  Recipes.find().populate('author')
-    .then(allTheRecipes => {
-      res.json(allTheRecipes);
-    })
-    .catch(err => {
-      res.json(err);
-    })
-});
+// router.get('/recipes', (req, res, next) => {
+//   Recipe.find().populate('author')
+//     .then(allTheRecipes => {
+//       res.json(allTheRecipes);
+//     })
+//     .catch(err => {
+//       res.json(err);
+//     })
+// });
 
 // GET route => to get a specific recipe/detailed view
 router.get('/recipes/:id', (req, res, next)=>{
@@ -43,7 +55,7 @@ router.get('/recipes/:id', (req, res, next)=>{
     return;
   }
                                    
-  Recipes.findById(req.params.id)
+  Recipe.findById(req.params.id)
     .then(response => {
       res.json(response);
     })
@@ -58,7 +70,7 @@ router.put('/recipes/:id', (req, res, next)=>{
     res.status(400).json({ message: 'Specified id is not valid' });
     return;
   }
-  Recipes.findByIdAndUpdate(req.params.id, req.body)
+  Recipe.findByIdAndUpdate(req.params.id, req.body)
     .then(() => {
       res.json({message: `Recipe with ${req.params.id} is updated successfully.`});
     })
@@ -72,7 +84,7 @@ router.delete('/recipes/:id', (req, res, next)=>{
     res.status(400).json({ message: 'Specified id is not valid' });
     return;
   }
-  Recipes.findByIdAndRemove(req.params.id)
+  Recipe.findByIdAndRemove(req.params.id)
     .then(() => {
       res.json({message: `Recipe with ${req.params.id} is removed successfully.`});
     })

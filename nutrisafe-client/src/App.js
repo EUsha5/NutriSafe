@@ -5,6 +5,10 @@ import AuthService from './components/user/authService';
 import Signup from './components/user/Signup';
 import Login from './components/user/Login';
 import Navbar from './components/Navbar';
+import Profile from './components/user/Profile';
+import RecipeBook from './components/RecipeBook';
+import Recipe from './components/Recipe';
+import CreateRecipe from './components/CreateRecipe';
 
 
 class App extends Component {
@@ -43,11 +47,17 @@ class App extends Component {
     this.fetchUser();
     return (
       <div className="App">
-        <Navbar setTheUser={this.getTheUser} userInSession={this.state.loggedInUser} />
+      <Navbar setTheUser={this.getTheUser} userInSession={this.state.loggedInUser} />
+      <div>
+        <h2>hello world</h2>
+      </div>
         <Switch>
           <Route exact path="/signup" render={() =><Signup setTheUser={this.getTheUser}/>} />
-          <Route exact path='/login' render={() => <Login setTheUser={this.getTheUser}/>} />
-          {/* <Route exact path="/login" Component={Login} /> */}
+          <Route exact path='/' render={() => <Login setTheUser={this.getTheUser}/>} />
+          <Route exact path="/profile" render={() => <Profile />} />
+          <Route exact path="/profile/book/:id" render={() => <RecipeBook />} />
+          <Route exact path="/recipes/:id" render={() => <Recipe />} />
+          <Route exact path="/recipes/create/:id" render={() => <CreateRecipe />} />
 
        </Switch>
       </div>

@@ -9,21 +9,22 @@ const RecipeBook = require('../../models/RecipeBook');
 // GET route => to get user profile
 router.get('/profile', (req, res, next) => {
   User.findById(req.user._id)
+  .populate('recipebook')
   .then((profile) => {
       res.json(profile); 
   })
-  RecipeBook.find({_id: profile.recipebook})
-  .then((response) =>{
-    data = {
-      profile: profile,
-      recipebook: response,
-      // editable: editable
-    }
-    res.json(data)
-  })
-  .catch((err) => {
-    next(err);
-  })
+  // RecipeBook.find({_id: profile.recipebook})
+  // .then((response) =>{
+  //   data = {
+  //     profile: profile,
+  //     recipebook: response,
+  //     // editable: editable
+  //   }
+  //   res.json(data)
+  // })
+  // .catch((err) => {
+  //   next(err);
+  // })
   .catch((err) => {
     res.json(err);
   })
@@ -40,6 +41,7 @@ router.get('/profile/book/:id', (req, res, next)=>{
     return;
   }                                   
   RecipeBook.findById(req.params.id)
+  .populate('recipes')
     .then(response => {
       res.json(response);
     })
@@ -75,21 +77,36 @@ router.put('/profile/book/:id', (req, res, next)=>{
     })
 });
 
+
 //create a recipe book---------------------
 router.post('/profile/book/create', (req, res, next) => {
   RecipeBook.create({
     title:  req.body.title,
-    author: req.user._id,
   })
   .then (response => {
-    console.log('???????????????', response);
-    res.json(response);
+    User.findByIdAndUpdate(req.user._id, {$push: {recipebook: response._id}})
+    .then(response => {
+      res.json(response)
+    })
+    .catch(err => {
+      res.json(err)
+    })
+    console.log('=========================', req.body)
+    console.log('???????Response????????', response);
+   
     console.log(response);
   })
   .catch(err => {
     res.json(err);
   })
 });
+
+
+
+      
+         
+
+
 
 //delete recipe----------------------------------------
 router.delete('/profile/book/:id', (req, res, next)=>{
