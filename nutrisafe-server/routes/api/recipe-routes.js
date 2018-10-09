@@ -10,7 +10,7 @@ router.post('/recipes/create', (req, res, next) => {
       name : req.body.name,
       image : req.body.image,
       preptime : req.body.preptime,
-      ingrediants : req.body.ingrediants,
+      ingredients : req.body.ingredients,
       instructions: req.body.instructions,
       author: req.user._id,
     })
